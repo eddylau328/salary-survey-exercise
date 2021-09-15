@@ -1,0 +1,29 @@
+version: '3.2'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db:/var/lib/postgresql/data
+    env_file: .env
+    ports:
+      - 5432:5432
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    image: salary-survery/backend:develop
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    container_name: salary-survery-backend
+    command: yarn dev
+    ports:
+      - 8000:8000
+    depends_on:
+      - 'db'
+    stdin_open: true
+    tty: true
