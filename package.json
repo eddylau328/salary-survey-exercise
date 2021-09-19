@@ -12,7 +12,8 @@
     "start": "NODE_PATH=src ts-node src/index.ts",
     "dev": "nodemon --watch 'src/**' --ext 'ts,json' --exec 'yarn start'",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint '*/**/*.{js,ts}' --quiet --fix --ignore-pattern node_modules/"
+    "lint": "eslint '*/**/*.{js,ts}' --quiet --fix --ignore-pattern node_modules/",
+    "run-init-db": "NODE_PATH=src ts-node src/initScript.ts"
   },
   "repository": {
     "type": "git",

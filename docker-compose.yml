@@ -1,4 +1,4 @@
-version: '3.2'
+version: "3.2"
 
 services:
   db:
@@ -20,10 +20,10 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     container_name: salary-survery-backend
-    command: yarn dev
+    command: sh -c "yarn run-init-db && yarn dev"
     ports:
       - 8000:8000
     depends_on:
-      - 'db'
+      - "db"
     stdin_open: true
     tty: true

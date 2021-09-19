@@ -1,10 +1,12 @@
 import { PrimaryGeneratedColumn, Column } from "typeorm";
 
 export abstract class Range {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   title: string;
 
   @Column({

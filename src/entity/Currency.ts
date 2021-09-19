@@ -3,10 +3,12 @@ import { SalaryInfo } from "./SalaryInfo";
 
 @Entity()
 export class Currency {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   title: string;
 
   @OneToMany(() => SalaryInfo, (salaryInfo) => salaryInfo.currency)
