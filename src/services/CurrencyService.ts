@@ -1,28 +1,13 @@
 import { Currency } from "entity/Currency";
-import ConstantService from "interfaces/constantService";
-import { getRepository } from "typeorm";
+import { ConstantService, GetCurrency } from "interfaces/constantService";
 
-class CurrencyService extends ConstantService {
-  async getConstant(title: string): Promise<Currency> {
+class CurrencyService extends ConstantService implements GetCurrency {
+  protected entity = Currency;
+  public async getConstant(title: string): Promise<Currency | undefined> {
     if (this.constantMap) {
-      return await this.getFromConstantMap(title);
+      return (await this.getFromConstantMap(title)) as Currency | undefined;
     }
-    return await this.getFromDatabase(title);
-  }
-
-  async getFromConstantMap(title: string): Promise<Currency | undefined> {
-    return await Promise.resolve(
-      this.constantMap[title] as Currency | undefined
-    );
-  }
-
-  async getFromDatabase(title: string): Promise<Currency | undefined> {
-    const repo = getRepository(Currency);
-    try {
-      return await repo.findOne({ title: title });
-    } catch (e) {
-      return await Promise.resolve(undefined);
-    }
+    return (await this.getFromDatabase(title)) as Currency | undefined;
   }
 }
 

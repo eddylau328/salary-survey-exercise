@@ -1,32 +1,25 @@
 import { WorkExperienceYear } from "entity/WorkExperienceYear";
-import ConstantService from "interfaces/constantService";
-import { getRepository } from "typeorm";
+import {
+  ConstantService,
+  GetWorkExperienceYear,
+} from "interfaces/constantService";
 
-class WorkExperienceYearService extends ConstantService {
-  async getConstant(title: string): Promise<WorkExperienceYear> {
+class WorkExperienceYearService
+  extends ConstantService
+  implements GetWorkExperienceYear
+{
+  protected entity = WorkExperienceYear;
+  public async getConstant(
+    title: string
+  ): Promise<WorkExperienceYear | undefined> {
     if (this.constantMap) {
-      return await this.getFromConstantMap(title);
+      return (await this.getFromConstantMap(title)) as
+        | WorkExperienceYear
+        | undefined;
     }
-    return await this.getFromDatabase(title);
-  }
-
-  async getFromConstantMap(
-    title: string
-  ): Promise<WorkExperienceYear | undefined> {
-    return await Promise.resolve(
-      this.constantMap[title] as WorkExperienceYear | undefined
-    );
-  }
-
-  async getFromDatabase(
-    title: string
-  ): Promise<WorkExperienceYear | undefined> {
-    const repo = getRepository(WorkExperienceYear);
-    try {
-      return await repo.findOne({ title: title });
-    } catch (e) {
-      return await Promise.resolve(undefined);
-    }
+    return (await this.getFromDatabase(title)) as
+      | WorkExperienceYear
+      | undefined;
   }
 }
 

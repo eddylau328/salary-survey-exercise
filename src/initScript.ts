@@ -5,41 +5,23 @@ import { WorkExperienceYear } from "entity/WorkExperienceYear";
 import { getRepository } from "typeorm";
 import { Currency } from "entity/Currency";
 
-const DATA_FIELD = {
-  CREATE_AT: "Timestamp",
-  AGE_GROUP: "How old are you?",
-  INDUSTRY: "What industry do you work in?",
-  JOB_TITLE: "Job title",
-  ANNUAL_SALARY: "What is your annual salary?",
-  CURRENCY: "Please indicate the currency",
-  LOCATION: "Where are you located? (City/state/country)",
-  WORK_EXPERIENCE_YEAR:
-    "How many years of post-college professional work experience do you have?",
-  JOB_REMARK:
-    "If your job title needs additional context, please clarify here:",
-  // eslint-disable-next-line quotes
-  CURRENCY_REMARK: 'If "Other," please indicate the currency here:',
-};
+import {
+  RawSalarySurvey,
+  SALARY_SURVET_FIELD,
+} from "interfaces/rawSalarySurvey";
+import { ConstantMap } from "interfaces/constantService";
 
-interface SalaryData {
-  [key: string]: string;
-}
+import AgeGroupService from "services/AgeGroupService";
+import CurrencyService from "services/CurrencyService";
+import WorkExperienceYearService from "services/WorkExperienceYearService";
+import SalarySurveyService from "services/SalarySurveyService";
+import SalaryService from "services/SalaryService";
 
 type ParsedRawData = {
   ageGroups: string[];
   workExperienceYears: string[];
   currencyDatum: string[];
 };
-
-interface AgeGroupMap {
-  [key: string]: AgeGroup;
-}
-interface WorkExperienceYearMap {
-  [key: string]: WorkExperienceYear;
-}
-interface CurrencyMap {
-  [key: string]: Currency;
-}
 
 async function setupAgeGroupData(ageGroups: string[]): Promise<AgeGroup[]> {
   function parseAgeGroup(group: string) {
@@ -117,15 +99,15 @@ async function setupCurrencyData(currencyDatum: string[]): Promise<Currency[]> {
   return await repo.save(currencyObjects);
 }
 
-function parseRawData(rawData: SalaryData[]): ParsedRawData {
+function parseRawData(rawData: RawSalarySurvey[]): ParsedRawData {
   const ageGroupSet: Set<string> = new Set();
   const workExperienceYearSet: Set<string> = new Set();
   const currencySet: Set<string> = new Set();
   Array.isArray(rawData) &&
-    rawData.forEach((item: SalaryData) => {
-      ageGroupSet.add(item[DATA_FIELD.AGE_GROUP]);
-      workExperienceYearSet.add(item[DATA_FIELD.WORK_EXPERIENCE_YEAR]);
-      currencySet.add(item[DATA_FIELD.CURRENCY]);
+    rawData.forEach((item: RawSalarySurvey) => {
+      ageGroupSet.add(item[SALARY_SURVET_FIELD.AGE_GROUP]);
+      workExperienceYearSet.add(item[SALARY_SURVET_FIELD.WORK_EXPERIENCE_YEAR]);
+      currencySet.add(item[SALARY_SURVET_FIELD.CURRENCY]);
     });
   return {
     ageGroups: [...ageGroupSet],
@@ -144,34 +126,35 @@ function parseConstantsObjects({
   currencyObjects: Currency[];
   workExperienceYearObjects: WorkExperienceYear[];
 }): {
-  ageGroupMap: AgeGroupMap;
-  currencyMap: CurrencyMap;
-  workExperienceYearMap: WorkExperienceYearMap;
+  ageGroupMap: ConstantMap<AgeGroup>;
+  currencyMap: ConstantMap<Currency>;
+  workExperienceYearMap: ConstantMap<WorkExperienceYear>;
 } {
-  const ageGroupMap: AgeGroupMap = ageGroupObjects.reduce(
-    (acc: AgeGroupMap, group): AgeGroupMap => {
+  const ageGroupMap: ConstantMap<AgeGroup> = ageGroupObjects.reduce(
+    (acc: ConstantMap<AgeGroup>, group: AgeGroup): ConstantMap<AgeGroup> => {
       acc[group.title] = group;
       return acc;
     },
     {}
   );
-  const workExperienceYearMap: WorkExperienceYearMap =
+  const workExperienceYearMap: ConstantMap<WorkExperienceYear> =
     workExperienceYearObjects.reduce(
-      (acc: WorkExperienceYearMap, group): WorkExperienceYearMap => {
+      (
+        acc: ConstantMap<WorkExperienceYear>,
+        group: WorkExperienceYear
+      ): ConstantMap<WorkExperienceYear> => {
         acc[group.title] = group;
         return acc;
       },
       {}
     );
-
-  const currencyMap: CurrencyMap = currencyObjects.reduce(
-    (acc: CurrencyMap, currency) => {
+  const currencyMap: ConstantMap<Currency> = currencyObjects.reduce(
+    (acc: ConstantMap<Currency>, currency: Currency): ConstantMap<Currency> => {
       acc[currency.title] = currency;
       return acc;
     },
     {}
   );
-
   return {
     ageGroupMap,
     currencyMap,
@@ -183,7 +166,7 @@ function parseConstantsObjects({
   const db = new DB();
   await db.initialize();
   const { ageGroups, workExperienceYears, currencyDatum } = parseRawData(
-    data as Array<SalaryData>
+    data as RawSalarySurvey[]
   );
   const [ageGroupObjects, workExperienceYearObjects, currencyObjects] =
     await Promise.all([
@@ -197,7 +180,26 @@ function parseConstantsObjects({
       workExperienceYearObjects,
       currencyObjects,
     });
-  console.log(ageGroupMap);
-  console.log(currencyMap);
-  console.log(workExperienceYearMap);
+
+  const ageGroupService = new AgeGroupService(ageGroupMap);
+  const currencyService = new CurrencyService(currencyMap);
+  const workExperienceYearService = new WorkExperienceYearService(
+    workExperienceYearMap
+  );
+  const salaryService = new SalaryService();
+
+  const salarySurveyService = new SalarySurveyService({
+    ageGroupService,
+    currencyService,
+    workExperienceYearService,
+    salaryService,
+  });
+  if (Array.isArray(data)) {
+    console.log("start create survery result");
+    try {
+      await salarySurveyService.createBatchSurveyResult(data, 2000);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 })();

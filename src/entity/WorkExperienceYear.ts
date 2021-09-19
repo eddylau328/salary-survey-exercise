@@ -1,4 +1,4 @@
-import { Range } from "entity/range/Range";
+import { Range } from "entity/constant/Range";
 import { Entity, OneToMany } from "typeorm";
 import { PersonalInfo } from "./PersonalInfo";
 

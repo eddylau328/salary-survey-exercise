@@ -105,3 +105,4 @@ dist
 
 ormconfig.json
 db
+.env.*

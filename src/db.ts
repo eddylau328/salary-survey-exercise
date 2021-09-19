@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
 import { ServerStatus } from "interfaces/ServerStatus";
+import { dbConfig } from "config";
 
 export default class DB {
   public status: ServerStatus;
@@ -11,7 +12,7 @@ export default class DB {
 
   public async initialize(): Promise<Connection> {
     try {
-      const connection = await createConnection();
+      const connection = await createConnection(dbConfig);
       this.status = ServerStatus.Ready;
       console.log("Connected to database");
       return connection;

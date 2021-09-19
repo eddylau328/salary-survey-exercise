@@ -10,10 +10,11 @@
     "serve": "node dist/index.js",
     "ts-node": "ts-node",
     "start": "NODE_PATH=src ts-node src/index.ts",
-    "dev": "nodemon --watch 'src/**' --ext 'ts,json' --exec 'yarn start'",
+    "dev": "NODE_ENV=development nodemon --watch 'src/**' --ext 'ts,json' --exec 'yarn start'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint '*/**/*.{js,ts}' --quiet --fix --ignore-pattern node_modules/",
-    "run-init-db": "NODE_PATH=src ts-node src/initScript.ts"
+    "run-init-db": "NODE_PATH=src ts-node src/initScript.ts",
+    "run-init-db-local": "NODE_ENV=local yarn run-init-db"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
     "morgan": "^1.10.0",

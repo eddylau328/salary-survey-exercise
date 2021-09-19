@@ -1,13 +1,9 @@
 import { PrimaryGeneratedColumn, Column } from "typeorm";
+import { Constant } from "./Constant";
 
-export abstract class Range {
+export abstract class Range extends Constant {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({
-    unique: true,
-  })
-  title: string;
 
   @Column({
     type: "int2",

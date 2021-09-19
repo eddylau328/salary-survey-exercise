@@ -10,10 +10,12 @@ import { AgeGroup } from "./AgeGroup";
 import { SurveyResult } from "./SurveyResult";
 import { WorkExperienceYear } from "./WorkExperienceYear";
 
+export type PersonalInfoId = number;
+
 @Entity()
 export class PersonalInfo {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: PersonalInfoId;
 
   @OneToOne(() => SurveyResult, (surveyResult) => surveyResult.personalInfo)
   surveyResult: SurveyResult;

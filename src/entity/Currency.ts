@@ -1,16 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Entity, OneToMany } from "typeorm";
+import { Constant } from "./constant/Constant";
 import { SalaryInfo } from "./SalaryInfo";
 
 @Entity()
-export class Currency {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({
-    unique: true,
-  })
-  title: string;
-
+export class Currency extends Constant {
   @OneToMany(() => SalaryInfo, (salaryInfo) => salaryInfo.currency)
   salaryInfo: SalaryInfo;
 }
