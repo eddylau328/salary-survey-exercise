@@ -3,7 +3,7 @@ import exchangeRateData from "exchangeRate.json";
 import DB from "db";
 import { AgeGroup } from "entity/AgeGroup";
 import { WorkExperienceYear } from "entity/WorkExperienceYear";
-import { getRepository } from "typeorm";
+import { getConnection, getRepository } from "typeorm";
 import { Currency } from "entity/Currency";
 import { ExchangeRate } from "entity/ExchangeRate";
 
@@ -172,9 +172,26 @@ function parseConstantsObjects({
   };
 }
 
+async function removeAllData(): Promise<void> {
+  const connection = getConnection();
+  await connection.manager.query("DELETE FROM survey_result");
+  await Promise.all([
+    connection.manager.query("DELETE FROM salary_info"),
+    connection.manager.query("DELETE FROM job_info"),
+    connection.manager.query("DELETE FROM personal_info"),
+  ]);
+  await connection.manager.query("DELETE FROM exchange_rate");
+  await Promise.all([
+    connection.manager.query("DELETE FROM age_group"),
+    connection.manager.query("DELETE FROM work_experience_year"),
+    connection.manager.query("DELETE FROM currency"),
+  ]);
+}
+
 (async (): Promise<void> => {
   const db = new DB();
   await db.initialize();
+  await removeAllData();
   const { ageGroups, workExperienceYears, currencyDatum } = parseRawData(
     data as RawSalarySurvey[]
   );
@@ -190,7 +207,6 @@ function parseConstantsObjects({
       workExperienceYearObjects,
       currencyObjects,
     });
-
   const ageGroupService = new AgeGroupService(ageGroupMap);
   const currencyService = new CurrencyService(currencyMap);
   const workExperienceYearService = new WorkExperienceYearService(
@@ -211,7 +227,6 @@ function parseConstantsObjects({
       throw e;
     }
   }
-
   const salaryService = new SalaryService();
   const salarySurveyService = new SalarySurveyService({
     ageGroupService,
@@ -222,7 +237,7 @@ function parseConstantsObjects({
   if (Array.isArray(data)) {
     console.log("start create survery result");
     try {
-      await salarySurveyService.createBatchSurveyResult(data, 2000);
+      await salarySurveyService.createBatchSurveyResult(data, 1000);
     } catch (e) {
       console.log(e);
       throw e;
