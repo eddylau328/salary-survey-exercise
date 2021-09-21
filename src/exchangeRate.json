@@ -1,0 +1,62 @@
+[
+  {
+    "from": "USD",
+    "to": "USD",
+    "rate": 1.0,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "GBP",
+    "to": "USD",
+    "rate": 1.37165,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "CAD",
+    "to": "USD",
+    "rate": 0.782355,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "EUR",
+    "to": "USD",
+    "rate": 1.17206,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "SEK",
+    "to": "USD",
+    "rate": 0.115082,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "AUD/NZD",
+    "to": "USD",
+    "rate": 0.724809,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "JPY",
+    "to": "USD",
+    "rate": 0.009097,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "CHF",
+    "to": "USD",
+    "rate": 1.072648,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "HKD",
+    "to": "USD",
+    "rate": 0.128423,
+    "createAt": "1632147252730"
+  },
+  {
+    "from": "ZAR",
+    "to": "USD",
+    "rate": 0.067647,
+    "createAt": "1632147252730"
+  }
+]

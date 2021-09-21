@@ -6,7 +6,7 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 const dbConfig: ConnectionOptions = {
   type: "postgres",
   host: process.env.POSTGRES_HOST || "localhost",
-  port: parseInt(process.env.POSTGRES_PORT || "8000"),
+  port: parseInt(process.env.POSTGRES_PORT || "5432"),
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
@@ -22,6 +22,6 @@ const dbConfig: ConnectionOptions = {
   },
 };
 
-const port = process.env.PORT;
+const port = process.env.PORT || "5432";
 
 export { port, dbConfig };

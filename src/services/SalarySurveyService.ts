@@ -8,13 +8,18 @@ import {
   GetCurrency,
   GetWorkExperienceYear,
 } from "interfaces/constantService";
-import { ParseAnnualSalary } from "interfaces/salaryService";
+import {
+  AverageAnnualSalaryResponse,
+  AverageAnnualSalaryRequest,
+  SalaryService,
+} from "interfaces/salaryService";
 
 import { SurveyResult, SurveyResultId } from "entity/SurveyResult";
 import { PersonalInfo } from "entity/PersonalInfo";
 import { getConnection, QueryRunner } from "typeorm";
 import { JobInfo } from "entity/JobInfo";
 import { SalaryInfo } from "entity/SalaryInfo";
+
 import allSettled, {
   PromiseStatus,
   PromiseFulfilledResult,
@@ -25,7 +30,7 @@ class SalarySurveyService implements SalarySurveyServiceImp {
   ageGroupService: GetAgeGroup;
   currencyService: GetCurrency;
   workExperienceYearService: GetWorkExperienceYear;
-  salaryService: ParseAnnualSalary;
+  salaryService: SalaryService;
 
   constructor({
     ageGroupService,
@@ -36,7 +41,7 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     ageGroupService: GetAgeGroup;
     currencyService: GetCurrency;
     workExperienceYearService: GetWorkExperienceYear;
-    salaryService: ParseAnnualSalary;
+    salaryService: SalaryService;
   }) {
     this.ageGroupService = ageGroupService;
     this.currencyService = currencyService;
@@ -115,6 +120,17 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     surveyResultId: SurveyResultId
   ): Promise<SurveyResult> {
     return new SurveyResult();
+  }
+
+  public async getAverageAnnualSalary(
+    averageAnnualSalaryRequest: AverageAnnualSalaryRequest
+  ): Promise<AverageAnnualSalaryResponse> {
+    const currency = averageAnnualSalaryRequest.currency || "USD";
+    const targetCurrency = await this.currencyService.getConstant(currency);
+    return await this.salaryService.getAverageAnnualSalary(
+      averageAnnualSalaryRequest,
+      targetCurrency
+    );
   }
 
   public async updateSurveyResultById(

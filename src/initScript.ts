@@ -1,21 +1,25 @@
 import data from "salaryData.json";
+import exchangeRateData from "exchangeRate.json";
 import DB from "db";
 import { AgeGroup } from "entity/AgeGroup";
 import { WorkExperienceYear } from "entity/WorkExperienceYear";
 import { getRepository } from "typeorm";
 import { Currency } from "entity/Currency";
+import { ExchangeRate } from "entity/ExchangeRate";
 
 import {
   RawSalarySurvey,
   SALARY_SURVET_FIELD,
 } from "interfaces/rawSalarySurvey";
 import { ConstantMap } from "interfaces/constantService";
+import { RawExchangeRate } from "interfaces/exchangeRateService";
 
 import AgeGroupService from "services/AgeGroupService";
 import CurrencyService from "services/CurrencyService";
 import WorkExperienceYearService from "services/WorkExperienceYearService";
 import SalarySurveyService from "services/SalarySurveyService";
 import SalaryService from "services/SalaryService";
+import ExchangeRateService from "services/ExchangeRateService";
 
 type ParsedRawData = {
   ageGroups: string[];
@@ -97,6 +101,12 @@ async function setupCurrencyData(currencyDatum: string[]): Promise<Currency[]> {
     return Object.assign(currencyObject, currency);
   });
   return await repo.save(currencyObjects);
+}
+
+async function setupExchangeRate(
+  currencyObjects: Currency[]
+): Promise<ExchangeRate[]> {
+  return;
 }
 
 function parseRawData(rawData: RawSalarySurvey[]): ParsedRawData {
@@ -186,8 +196,23 @@ function parseConstantsObjects({
   const workExperienceYearService = new WorkExperienceYearService(
     workExperienceYearMap
   );
-  const salaryService = new SalaryService();
+  const exchangeRateService = new ExchangeRateService({ currencyService });
+  if (Array.isArray(exchangeRateData)) {
+    console.log("start create exchange rate");
+    try {
+      await Promise.all(
+        exchangeRateData.map(
+          (data: RawExchangeRate): Promise<ExchangeRate> =>
+            exchangeRateService.createExchangeRate(data)
+        )
+      );
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
 
+  const salaryService = new SalaryService();
   const salarySurveyService = new SalarySurveyService({
     ageGroupService,
     currencyService,
@@ -200,6 +225,7 @@ function parseConstantsObjects({
       await salarySurveyService.createBatchSurveyResult(data, 2000);
     } catch (e) {
       console.log(e);
+      throw e;
     }
   }
 })();

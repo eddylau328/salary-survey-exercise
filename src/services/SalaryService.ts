@@ -1,9 +1,48 @@
-import { ParseAnnualSalary } from "interfaces/salaryService";
+import { Currency } from "entity/Currency";
+import { SurveyResult } from "entity/SurveyResult";
+import { ExchangeRate } from "entity/ExchangeRate";
+import {
+  SalaryService as SalaryServiceImp,
+  AverageAnnualSalaryRequest,
+  AverageAnnualSalaryResponse,
+} from "interfaces/salaryService";
+import { getRepository } from "typeorm";
 
-class SalaryService implements ParseAnnualSalary {
+class SalaryService implements SalaryServiceImp {
   public async parseAnnualSalary(rawAnnualSalary: string): Promise<number> {
     const annualSalary = this.filterAnnualSalary(rawAnnualSalary);
     return await Promise.resolve(annualSalary || 0);
+  }
+
+  public async getAverageAnnualSalary(
+    averageAnnualSalaryRequest: AverageAnnualSalaryRequest,
+    targetCurrency: Currency
+  ): Promise<AverageAnnualSalaryResponse> {
+    const { jobRole } = averageAnnualSalaryRequest;
+    const repsonse = await getRepository(SurveyResult)
+      .createQueryBuilder("surveyResult")
+      .leftJoinAndSelect("surveyResult.jobInfo", "jobInfo")
+      .leftJoinAndSelect("surveyResult.salaryInfo", "salaryInfo")
+      .leftJoinAndSelect("salaryInfo.currency", "currency")
+      .leftJoinAndMapOne(
+        "currency.exchangeRateFrom",
+        ExchangeRate,
+        "exchangeRate",
+        `"exchangeRate"."targetFromId" = "salaryInfo"."currencyId" AND "exchangeRate"."targetToId" = ${targetCurrency.id}`
+      )
+      .where("jobInfo.title ilike :jobRole", { jobRole: `%${jobRole}%` })
+      /* eslint-disable-next-line  */
+      .andWhere('"exchangeRate"."rate" * "salaryInfo"."annualSalary" > 0')
+      .select(
+        /* eslint-disable-next-line */
+        'ROUND(AVG("exchangeRate"."rate" * "salaryInfo"."annualSalary"), 2)',
+        "averageAnnualSalary"
+      )
+      .addSelect("COUNT(*)", "count")
+      .addSelect(`'${targetCurrency.title}' AS "targetCurrency"`)
+      .addSelect(`'${jobRole}' AS "jobRole"`)
+      .getRawOne();
+    return repsonse;
   }
 
   private filterAnnualSalary(rawAnnualSalary: string): number | undefined {

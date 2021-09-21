@@ -1,5 +1,9 @@
 import { RawSalarySurvey } from "./rawSalarySurvey";
 import { SurveyResult, SurveyResultId } from "entity/SurveyResult";
+import {
+  AverageAnnualSalaryRequest,
+  AverageAnnualSalaryResponse,
+} from "./salaryService";
 
 interface SalarySurveyService {
   createSingleSurveyResult(
@@ -14,6 +18,10 @@ interface SalarySurveyService {
     surveyResultId: SurveyResultId,
     rawSalarySurvey: RawSalarySurvey
   ): Promise<SurveyResult>;
+
+  getAverageAnnualSalary(
+    averageAnnualSalaryRequest: AverageAnnualSalaryRequest
+  ): Promise<AverageAnnualSalaryResponse>;
 }
 
 export default SalarySurveyService;
