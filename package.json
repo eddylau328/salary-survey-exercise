@@ -11,7 +11,7 @@
     "ts-node": "ts-node",
     "start": "NODE_PATH=src ts-node src/index.ts",
     "dev": "NODE_ENV=development nodemon --watch 'src/**' --ext 'ts,json' --exec 'yarn start'",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "lint": "eslint '*/**/*.{js,ts}' --quiet --fix --ignore-pattern node_modules/",
     "run-init-db": "NODE_PATH=src ts-node src/initScript.ts",
     "run-init-db-local": "NODE_ENV=local yarn run-init-db"
@@ -31,6 +31,7 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/helmet": "^4.0.0",
+    "@types/jest": "^27.0.2",
     "@types/morgan": "^1.9.3",
     "@types/node": "^8.0.29",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
@@ -38,8 +39,10 @@
     "eslint": "^7.32.0",
     "eslint-plugin-import": "^2.24.2",
     "husky": "^7.0.2",
+    "jest": "^27.2.1",
     "nodemon": "^2.0.12",
     "prettier": "^2.4.0",
+    "ts-jest": "^27.0.5",
     "ts-node": "3.3.0",
     "tslint": "^6.1.3",
     "typescript": "3.3.3333"
