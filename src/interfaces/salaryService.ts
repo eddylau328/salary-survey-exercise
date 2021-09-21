@@ -1,5 +1,20 @@
 import { Currency } from "entity/Currency";
 
+interface numberSymbolMap {
+  [key: string]: number;
+}
+
+const NUMERIC_SYMBOL: numberSymbolMap = {
+  K: Math.pow(10, 3),
+  k: Math.pow(10, 3),
+  M: Math.pow(10, 6),
+  m: Math.pow(10, 6),
+  B: Math.pow(10, 9),
+  b: Math.pow(10, 9),
+  T: Math.pow(10, 12),
+  t: Math.pow(10, 12),
+};
+
 interface ParseAnnualSalary {
   parseAnnualSalary(rawSalary: string): Promise<number>;
 }
@@ -29,4 +44,5 @@ export {
   AverageAnnualSalaryRequest,
   AverageAnnualSalaryResponse,
   SalaryService,
+  NUMERIC_SYMBOL,
 };

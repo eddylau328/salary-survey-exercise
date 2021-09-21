@@ -5,6 +5,7 @@ import {
   SalaryService as SalaryServiceImp,
   AverageAnnualSalaryRequest,
   AverageAnnualSalaryResponse,
+  NUMERIC_SYMBOL,
 } from "interfaces/salaryService";
 import { getRepository } from "typeorm";
 
@@ -46,18 +47,14 @@ class SalaryService implements SalaryServiceImp {
   }
 
   private filterAnnualSalary(rawAnnualSalary: string): number | undefined {
-    const isContainAlphabet = (examineValue: string): boolean => {
-      const characterRegex = /[a-zA-Z]/g;
-      return characterRegex.test(examineValue);
-    };
+    const NUMBER_REGEX =
+      /((\d+|\d{1,3})(,\d{1,3})*)(\.\d+|\ +[k,K,m,M,b,B,t,T]$|\ +|[k,K,m,M,b,B,t,T]$)?(\ +[k,K,m,M,b,B,t,T]$|[k,K,m,M,b,B,t,T]$)?/;
 
     const isContainNumber = (examineValue: string): boolean => {
-      const numberRegex = /(\d+|\d{1,3}(,\d{3})*)(\.\d+)?/;
-      return numberRegex.test(examineValue);
+      return NUMBER_REGEX.test(examineValue);
     };
     const getMatchNumbers = (examineValue: string): string[] | null => {
-      const numberRegex = /(\d+|\d{1,3}(,\d{3})*)(\.\d+)?/;
-      return examineValue.match(numberRegex);
+      return examineValue.match(NUMBER_REGEX);
     };
 
     const removeWhiteSpaces = (value: string): string =>
@@ -65,7 +62,17 @@ class SalaryService implements SalaryServiceImp {
 
     const removeCommas = (value: string): string => value.replace(/,/g, "");
 
-    if (isContainAlphabet(rawAnnualSalary)) {
+    const convertValue = (value: string): number => {
+      const symbol = Object.keys(NUMERIC_SYMBOL).find((symbol) =>
+        value.includes(symbol)
+      );
+      if (!symbol) {
+        return parseFloat(value);
+      }
+      return parseFloat(value.replace(symbol, "")) * NUMERIC_SYMBOL[symbol];
+    };
+
+    if (!isContainNumber(rawAnnualSalary)) {
       return undefined;
     }
 
@@ -84,8 +91,8 @@ class SalaryService implements SalaryServiceImp {
     }
 
     const closedResult: string = matchNumbers[0];
-    const pureNumber = removeCommas(closedResult);
-    const result = parseFloat(pureNumber);
+    const filterResult = removeCommas(closedResult);
+    const result = convertValue(filterResult);
     if (isNaN(result)) {
       return undefined;
     }
