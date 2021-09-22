@@ -5,7 +5,11 @@ import AgeGroupService from "services/AgeGroupService";
 import WorkExperienceYearService from "services/WorkExperienceYearService";
 import CurrencyService from "services/CurrencyService";
 import SalaryService from "services/SalaryService";
-import { RawSalarySurvey } from "interfaces/rawSalarySurvey";
+import {
+  RawPatchSalarySurvey,
+  RawPatchSalarySurveyRequest,
+  RawSalarySurvey,
+} from "interfaces/rawSalarySurvey";
 
 export default class SalarySurveyController implements Controller {
   public path = "/salary-survey";
@@ -26,7 +30,20 @@ export default class SalarySurveyController implements Controller {
 
   private _initializeRouter() {
     this.router.get("/average-salary", this._getAverageSalary.bind(this));
+    this.router.get("/", this._getSalarySurvey.bind(this));
     this.router.post("/", this._postSalarySurvey.bind(this));
+  }
+
+  private async _getSalarySurvey(req: Request, res: Response) {
+    try {
+      const rawGetSalarySurveyRequest: RawPatchSalarySurveyRequest = req.body;
+      const surveyResult = await this._salarySurveyService.getSurveyResultById(
+        rawGetSalarySurveyRequest.id
+      );
+      res.status(200).json(surveyResult);
+    } catch (error) {
+      res.status(404).send();
+    }
   }
 
   private async _postSalarySurvey(req: Request, res: Response) {
@@ -36,12 +53,25 @@ export default class SalarySurveyController implements Controller {
         await this._salarySurveyService.createSingleSurveyResult(
           rawSalarySurvey
         );
-      res.status(200).json(surveyResult);
+      res.status(201).json(surveyResult);
     } catch (error) {
       const data = error.data || error.message;
       const statusCode = error.statusCode || 400;
       res.status(statusCode).json(data);
     }
+  }
+
+  private async _updateSalarySurvey(req: Request, res: Response) {
+    try {
+      const rawPatchSalarySurveyRequest: RawPatchSalarySurveyRequest = req.body;
+      const { id, ...rawPatchSalarySurvey } = rawPatchSalarySurveyRequest;
+      const surveyResult =
+        await this._salarySurveyService.updateSurveyResultById(
+          id,
+          rawPatchSalarySurvey
+        );
+      res.status(200).json(surveyResult);
+    } catch (error) {}
   }
 
   private async _getAverageSalary(req: Request, res: Response) {

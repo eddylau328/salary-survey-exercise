@@ -5,6 +5,7 @@ import {
   JoinColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { JobInfo } from "./JobInfo";
 import { PersonalInfo } from "./PersonalInfo";
@@ -29,6 +30,12 @@ export class SurveyResult {
   @JoinColumn()
   salaryInfo: SalaryInfo;
 
+  @Column({ type: "timestamptz" })
+  recordTimestamp: Date;
+
   @CreateDateColumn()
   createAt: Date;
+
+  @UpdateDateColumn()
+  updateAt: Date;
 }
