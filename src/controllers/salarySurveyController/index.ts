@@ -5,6 +5,7 @@ import AgeGroupService from "services/AgeGroupService";
 import WorkExperienceYearService from "services/WorkExperienceYearService";
 import CurrencyService from "services/CurrencyService";
 import SalaryService from "services/SalaryService";
+import { RawSalarySurvey } from "interfaces/rawSalarySurvey";
 
 export default class SalarySurveyController implements Controller {
   public path = "/salary-survey";
@@ -30,7 +31,12 @@ export default class SalarySurveyController implements Controller {
 
   private async _postSalarySurvey(req: Request, res: Response) {
     try {
-      res.status(200).json();
+      const rawSalarySurvey: RawSalarySurvey = req.body;
+      const surveyResult =
+        await this._salarySurveyService.createSingleSurveyResult(
+          rawSalarySurvey
+        );
+      res.status(200).json(surveyResult);
     } catch (error) {
       const data = error.data || error.message;
       const statusCode = error.statusCode || 400;
