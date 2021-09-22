@@ -8,6 +8,8 @@ describe("SalarySurveyService class", () => {
       { rawAnnualSalary: "200.00", expectValue: 200.0 },
       { rawAnnualSalary: "2,00", expectValue: 200 },
       { rawAnnualSalary: "200k", expectValue: 200000 },
+      { rawAnnualSalary: "200total", expectValue: 200 },
+      { rawAnnualSalary: "200thousand total", expectValue: 200000 },
       { rawAnnualSalary: "20 k", expectValue: 20000 },
       { rawAnnualSalary: "2.42M", expectValue: 2420000 },
       { rawAnnualSalary: "71,000 base with 6,000 bonus", expectValue: 71000 },
@@ -16,18 +18,18 @@ describe("SalarySurveyService class", () => {
       { rawAnnualSalary: "0", expectValue: 0 },
       {
         rawAnnualSalary: "varies widely, from 2.5 million to about 4 million",
-        expectValue: 0,
+        expectValue: 2500000,
       },
       {
         rawAnnualSalary: "Free rent",
         expectValue: 0,
       },
+      { rawAnnualSalary: "4 200 000", expectValue: 4200000 },
     ];
     convertTests.forEach(({ rawAnnualSalary, expectValue }) => {
       it(`should convert '${rawAnnualSalary}' to ${expectValue}`, async () => {
         const service = new SalaryService();
         const result = await service.parseAnnualSalary(rawAnnualSalary);
-        console.log(result);
         expect(result).toEqual(expectValue);
       });
     });

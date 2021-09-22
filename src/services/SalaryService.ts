@@ -6,6 +6,7 @@ import {
   AverageAnnualSalaryRequest,
   AverageAnnualSalaryResponse,
   NUMERIC_SYMBOL,
+  NUMBERIC_SYMBOL_LONG_TERM,
 } from "interfaces/salaryService";
 import { getRepository } from "typeorm";
 
@@ -48,7 +49,7 @@ class SalaryService implements SalaryServiceImp {
 
   private filterAnnualSalary(rawAnnualSalary: string): number | undefined {
     const NUMBER_REGEX =
-      /((\d+|\d{1,3})(,\d{1,3})*)(\.\d+|\ +[k,K,m,M,b,B,t,T]$|\ +|[k,K,m,M,b,B,t,T]$)?(\ +[k,K,m,M,b,B,t,T]$|[k,K,m,M,b,B,t,T]$)?/;
+      /((\d+|\d{1,3})([\,, ]\d{1,3})*)((\.\d+)?)(\ *)(([k,K,m,M,b,B,t,T](\ +|$))?)/;
 
     const isContainNumber = (examineValue: string): boolean => {
       return NUMBER_REGEX.test(examineValue);
@@ -57,10 +58,19 @@ class SalaryService implements SalaryServiceImp {
       return examineValue.match(NUMBER_REGEX);
     };
 
-    const removeWhiteSpaces = (value: string): string =>
-      value.replace(/ /g, "");
+    const convertLowerCase = (value: string) => value.toLowerCase();
+
+    const removeNumberSymbolLongTerm = (value: string) =>
+      Object.entries(NUMBERIC_SYMBOL_LONG_TERM).reduce(
+        (result, [longTermSymbol, shortTermSymbol]) => {
+          const regex = new RegExp(longTermSymbol, "g");
+          return result.replace(regex, shortTermSymbol);
+        },
+        value
+      );
 
     const removeCommas = (value: string): string => value.replace(/,/g, "");
+    const removeSpaces = (value: string): string => value.replace(/ /g, "");
 
     const convertValue = (value: string): number => {
       const symbol = Object.keys(NUMERIC_SYMBOL).find((symbol) =>
@@ -76,13 +86,17 @@ class SalaryService implements SalaryServiceImp {
       return undefined;
     }
 
-    const filterWhiteSpace = removeWhiteSpaces(rawAnnualSalary);
+    const lowerCaseRawAnnualSalary = convertLowerCase(rawAnnualSalary);
+    const filterNumberSymbolLongTerm = removeNumberSymbolLongTerm(
+      lowerCaseRawAnnualSalary
+    );
 
-    if (!isContainNumber(filterWhiteSpace)) {
+    if (!isContainNumber(filterNumberSymbolLongTerm)) {
       return undefined;
     }
-
-    const matchNumbers: string[] | null = getMatchNumbers(filterWhiteSpace);
+    const matchNumbers: string[] | null = getMatchNumbers(
+      filterNumberSymbolLongTerm
+    );
     if (!Array.isArray(matchNumbers)) {
       return undefined;
     }
@@ -91,8 +105,9 @@ class SalaryService implements SalaryServiceImp {
     }
 
     const closedResult: string = matchNumbers[0];
-    const filterResult = removeCommas(closedResult);
-    const result = convertValue(filterResult);
+    const filterCommasResult = removeCommas(closedResult);
+    const filterSpaceResult = removeSpaces(filterCommasResult);
+    const result = convertValue(filterSpaceResult);
     if (isNaN(result)) {
       return undefined;
     }

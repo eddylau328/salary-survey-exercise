@@ -15,6 +15,17 @@ const NUMERIC_SYMBOL: numberSymbolMap = {
   t: Math.pow(10, 12),
 };
 
+interface numberSymbolLongTermMap {
+  [key: string]: string;
+}
+
+const NUMBERIC_SYMBOL_LONG_TERM: numberSymbolLongTermMap = {
+  thousand: "K",
+  million: "M",
+  billion: "B",
+  trillion: "T",
+};
+
 interface ParseAnnualSalary {
   parseAnnualSalary(rawSalary: string): Promise<number>;
 }
@@ -45,4 +56,5 @@ export {
   AverageAnnualSalaryResponse,
   SalaryService,
   NUMERIC_SYMBOL,
+  NUMBERIC_SYMBOL_LONG_TERM,
 };
