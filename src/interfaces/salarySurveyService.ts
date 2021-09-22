@@ -1,5 +1,7 @@
 import {
   RawGetSalarySurveyRequest,
+  RawPostFilterSalarySurveyListRequest,
+  RawPostFilterSalarySurveyListResponse,
   RawSalarySurvey,
   RawSalarySurveyResponse,
 } from "./rawSalarySurvey";
@@ -20,6 +22,9 @@ interface SalarySurveyService {
   getSurveyResult(
     rawGetSalarySurveyRequest: RawGetSalarySurveyRequest
   ): Promise<SurveyResult | RawSalarySurveyResponse>;
+  getSurveyResultList(
+    rawPostFilterSalarySurveyRequest: RawPostFilterSalarySurveyListRequest
+  ): Promise<RawPostFilterSalarySurveyListResponse>;
   updateSurveyResultById(
     surveyResultId: SurveyResultId,
     rawSalarySurvey: RawSalarySurvey

@@ -8,11 +8,13 @@ import SalaryService from "services/SalaryService";
 import {
   RawGetSalarySurveyRequest,
   RawPatchSalarySurveyRequest,
+  RawPostFilterSalarySurveyListRequest,
   RawSalarySurvey,
   SURVEY_RESULT_FORMAT,
 } from "interfaces/rawSalarySurvey";
 import {
   validatePatchSalarySurveyRequest,
+  validatePostFilterSalarySurveyListRequest,
   validatePostSalarySurveyRequest,
 } from "./validators";
 import { AverageAnnualSalaryRequest } from "interfaces/salaryService";
@@ -20,8 +22,10 @@ import { AverageAnnualSalaryRequest } from "interfaces/salaryService";
 export default class SalarySurveyController implements Controller {
   public path = "/salary-survey";
   public router = Router();
-  public errorHandler = (err: Error): void => {
-    throw err;
+  public errorHandler = (err: Error, req: Request, res: Response): void => {
+    console.log(err);
+    res.status(400).json(err);
+    // throw err;
   };
 
   private _salarySurveyService: SalarySurveyService;
@@ -37,12 +41,13 @@ export default class SalarySurveyController implements Controller {
   }
 
   private _initializeRouter() {
-    this.router.get(
-      "/average-salary",
-
-      this._getAverageSalary.bind(this)
-    );
+    this.router.get("/average-salary", this._getAverageSalary.bind(this));
     this.router.get("/:id", this._getSalarySurvey.bind(this));
+    this.router.post(
+      "/list",
+      validatePostFilterSalarySurveyListRequest,
+      this._postFilterSalarySurveyList.bind(this)
+    );
     this.router.post(
       "/",
       validatePostSalarySurveyRequest,
@@ -53,6 +58,24 @@ export default class SalarySurveyController implements Controller {
       validatePatchSalarySurveyRequest,
       this._patchSalarySurvey.bind(this)
     );
+  }
+
+  private async _postFilterSalarySurveyList(req: Request, res: Response) {
+    try {
+      const rawPostFilterSalarySurveyRequest: RawPostFilterSalarySurveyListRequest =
+        {
+          format: SURVEY_RESULT_FORMAT.RAW,
+          ...req.body,
+        };
+      const surveyResponse =
+        await this._salarySurveyService.getSurveyResultList(
+          rawPostFilterSalarySurveyRequest
+        );
+      res.status(200).json(surveyResponse);
+    } catch (error) {
+      console.log(error);
+      res.status(400).send();
+    }
   }
 
   private async _getSalarySurvey(req: Request, res: Response) {
@@ -83,9 +106,7 @@ export default class SalarySurveyController implements Controller {
         );
       res.status(201).json(surveyResult);
     } catch (error) {
-      const data = error.data || error.message;
-      const statusCode = error.statusCode || 400;
-      res.status(statusCode).json(data);
+      res.status(400).send();
     }
   }
 
@@ -114,7 +135,7 @@ export default class SalarySurveyController implements Controller {
       res.status(200).json(averageAnnualSalary);
     } catch (error) {
       console.log(error);
-      res.status(400).json();
+      res.status(400).send();
     }
   }
 }

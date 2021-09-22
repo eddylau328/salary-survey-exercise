@@ -1,8 +1,16 @@
 import moment from "moment";
 import SalarySurveyServiceImp from "interfaces/salarySurveyService";
 import {
+  FilterAgeGroup,
+  FilterAnnualSalary,
+  FilterCurrency,
+  FilterJob,
+  FilterWorkExperienceYear,
+  FILTER_CONDITION_LOGIC,
   RawGetSalarySurveyRequest,
   RawPatchSalarySurvey,
+  RawPostFilterSalarySurveyListRequest,
+  RawPostFilterSalarySurveyListResponse,
   RawSalarySurvey,
   RawSalarySurveyResponse,
   SALARY_SURVEY_FIELD,
@@ -21,7 +29,15 @@ import {
 
 import { SurveyResult, SurveyResultId } from "entity/SurveyResult";
 import { PersonalInfo } from "entity/PersonalInfo";
-import { getConnection, getRepository, QueryRunner } from "typeorm";
+import {
+  Brackets,
+  getConnection,
+  getRepository,
+  ObjectLiteral,
+  QueryRunner,
+  SelectQueryBuilder,
+  WhereExpressionBuilder,
+} from "typeorm";
 import { JobInfo } from "entity/JobInfo";
 import { SalaryInfo } from "entity/SalaryInfo";
 
@@ -144,6 +160,36 @@ class SalarySurveyService implements SalarySurveyServiceImp {
       return result;
     }
     return await this.convertRawFormat(result);
+  }
+
+  public async getSurveyResultList(
+    rawPostFilterSalarySurveyRequest: RawPostFilterSalarySurveyListRequest
+  ): Promise<RawPostFilterSalarySurveyListResponse> {
+    const { format = SURVEY_RESULT_FORMAT.RAW } =
+      rawPostFilterSalarySurveyRequest;
+    let query = await getRepository(SurveyResult)
+      .createQueryBuilder("surveyResult")
+      .leftJoinAndSelect("surveyResult.jobInfo", "jobInfo")
+      .leftJoinAndSelect("surveyResult.salaryInfo", "salaryInfo")
+      .leftJoinAndSelect("surveyResult.personalInfo", "personalInfo")
+      .leftJoinAndSelect("salaryInfo.currency", "currency")
+      .leftJoinAndSelect("personalInfo.ageGroup", "ageGroup")
+      .leftJoinAndSelect(
+        "personalInfo.workExperienceYear",
+        "workExperienceYear"
+      );
+    query = await this.addFilterGroup(rawPostFilterSalarySurveyRequest, query);
+    const [results, count] = await query.getManyAndCount();
+    if (format === SURVEY_RESULT_FORMAT.RAW) {
+      const rawResults = await Promise.all(
+        results.map((result) => this.convertRawFormat(result))
+      );
+      return {
+        count,
+        results: rawResults,
+      };
+    }
+    return { count, results };
   }
 
   public async getAverageAnnualSalary(
@@ -447,7 +493,126 @@ class SalarySurveyService implements SalarySurveyServiceImp {
       [SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR]:
         result.personalInfo.workExperienceYear.title,
     };
-    return rawResult;
+    return await Promise.resolve(rawResult);
+  }
+
+  private addFilterGroup(
+    filterGroup: RawPostFilterSalarySurveyListRequest,
+    query: SelectQueryBuilder<SurveyResult>
+  ): SelectQueryBuilder<SurveyResult> {
+    const {
+      ageGroupFilter = undefined,
+      currencyFilter = undefined,
+      workExperienceYearFilter = undefined,
+      annualSalaryFilter = undefined,
+      jobFilter = undefined,
+    } = filterGroup;
+    const addQuery = (condition: FILTER_CONDITION_LOGIC) => {
+      if (condition === FILTER_CONDITION_LOGIC.OR) {
+        return (where: string, parameters: ObjectLiteral) =>
+          query.orWhere(where, parameters);
+      }
+      return (where: string, parameters: ObjectLiteral) =>
+        query.andWhere(where, parameters);
+    };
+    const filterAgeGroup = () => {
+      if ("titles" in ageGroupFilter) {
+        addQuery(ageGroupFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"ageGroup"."title" IN (:...ageGroupTitles)`,
+          { ageGroupTitles: ageGroupFilter.titles }
+        );
+      }
+      if ("start" in ageGroupFilter && "end" in ageGroupFilter) {
+        addQuery(ageGroupFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"ageGroup"."start" >= :ageGroupStart AND "ageGroup"."end" <= :ageGroupEnd`,
+          {
+            ageGroupStart: ageGroupFilter.start,
+            ageGroupEnd: ageGroupFilter.end,
+          }
+        );
+      }
+    };
+    const filterCurrency = () => {
+      if ("titles" in currencyFilter) {
+        addQuery(currencyFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"currency"."title" IN (:...currencyTitles)`,
+          { currencyTitles: currencyFilter.titles }
+        );
+      }
+    };
+    const filterWorkExperienceYear = () => {
+      if ("titles" in workExperienceYearFilter) {
+        query = addQuery(workExperienceYearFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"workExperienceYear"."titles" IN (:...titles)`,
+          { titles: workExperienceYearFilter.titles }
+        );
+      }
+      if (
+        "start" in workExperienceYearFilter &&
+        "end" in workExperienceYearFilter
+      ) {
+        query = addQuery(workExperienceYearFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"workExperienceYear"."start" >= :workExperienceYearStart AND "workExperienceYear"."end" <= :workExperienceYearEnd`,
+          {
+            workExperienceYearStart: workExperienceYearFilter.start,
+            workExperienceYearEnd: workExperienceYearFilter.end,
+          }
+        );
+      }
+    };
+    const filterAnnualSalary = () => {
+      if ("textSearch" in annualSalaryFilter) {
+        query = addQuery(annualSalaryFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"salaryInfo"."rawAnnualSalary" ilike :rawAnnualSalarySearch`,
+          { rawAnnualSalarySearch: `%${annualSalaryFilter.textSearch}%` }
+        );
+      }
+      if (
+        "rangeStart" in annualSalaryFilter &&
+        "rangeEnd" in annualSalaryFilter
+      ) {
+        query = addQuery(annualSalaryFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"salaryInfo"."annualSalary" >= :annualSalaryStart AND "salaryInfo"."annualSalary" <= :annualSalaryEnd`,
+          {
+            annualSalaryStart: annualSalaryFilter.rangeStart,
+            annualSalaryEnd: annualSalaryFilter.rangeEnd,
+          }
+        );
+      }
+    };
+    const filterJob = () => {
+      if ("jobRole" in jobFilter) {
+        query = addQuery(jobFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"jobInfo"."title" ilike :jobRole`,
+          {
+            jobRole: `%${jobFilter.jobRole}%`,
+          }
+        );
+      }
+      if ("industry" in jobFilter) {
+        query = addQuery(jobFilter.condition)(
+          // eslint-disable-next-line quotes
+          `"jobInfo"."industry" ilike :industry`,
+          {
+            industry: `%${jobFilter.industry}%`,
+          }
+        );
+      }
+    };
+    if (ageGroupFilter) filterAgeGroup();
+    if (currencyFilter) filterCurrency();
+    if (workExperienceYearFilter) filterWorkExperienceYear();
+    if (annualSalaryFilter) filterAnnualSalary();
+    if (jobFilter) filterJob();
+    return query;
   }
 }
 

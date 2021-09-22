@@ -1,10 +1,122 @@
 import { Joi, validate } from "express-validation";
-import { SALARY_SURVEY_FIELD } from "interfaces/rawSalarySurvey";
+import {
+  FILTER_CONDITION_LOGIC,
+  SALARY_SURVEY_FIELD,
+  SURVEY_RESULT_FORMAT,
+} from "interfaces/rawSalarySurvey";
 import {
   ACCEPT_AGE_GROUP_FIELDS,
   ACCEPT_CURRENCY_FIELDS,
   ACCEPT_WORK_EXPERIENCE_YEAR_FIELDS,
 } from "interfaces/constantService";
+
+const postFilterSalarySurveyListSchema = {
+  body: Joi.object({
+    ageGroupFilter: Joi.object({
+      titles: Joi.array()
+        .items(Joi.string().valid(...ACCEPT_AGE_GROUP_FIELDS))
+        .default(null),
+      start: Joi.number().integer().strict().when("titles", {
+        is: null,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+      end: Joi.number().integer().strict().when("titles", {
+        is: null,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+      condition: Joi.string()
+        .valid(FILTER_CONDITION_LOGIC.AND, FILTER_CONDITION_LOGIC.OR)
+        .when("titles", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        })
+        .when("start", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        }),
+    }).allow({}),
+    workExperienceYearFilter: Joi.object({
+      titles: Joi.array()
+        .items(Joi.string().valid(...ACCEPT_WORK_EXPERIENCE_YEAR_FIELDS))
+        .default(null),
+      start: Joi.number().integer().strict().when("titles", {
+        is: null,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+      end: Joi.number().integer().strict().when("titles", {
+        is: null,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+      condition: Joi.string()
+        .valid(FILTER_CONDITION_LOGIC.AND, FILTER_CONDITION_LOGIC.OR)
+        .when("titles", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        })
+        .when("start", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        }),
+    }).allow({}),
+    currencyFilter: Joi.object({
+      titles: Joi.array()
+        .items(Joi.string().valid(...ACCEPT_CURRENCY_FIELDS))
+        .default([...ACCEPT_CURRENCY_FIELDS])
+        .required(),
+      condition: Joi.string()
+        .valid(FILTER_CONDITION_LOGIC.AND, FILTER_CONDITION_LOGIC.OR)
+        .when("titles", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        }),
+    }).allow({}),
+    annualSalaryFilter: Joi.object({
+      textSearch: Joi.string().allow("").default(null),
+      rangeStart: Joi.number().integer().strict().when("textSearch", {
+        is: null,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+      rangeEnd: Joi.number().integer().strict().when("textSearch", {
+        is: null,
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+      }),
+      condition: Joi.string()
+        .valid(FILTER_CONDITION_LOGIC.AND, FILTER_CONDITION_LOGIC.OR)
+        .when("textSearch", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        })
+        .when("rangeStart", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        }),
+    }).allow({}),
+    jobFilter: Joi.object({
+      jobRole: Joi.string().allow(""),
+      industry: Joi.string().allow(""),
+      condition: Joi.string()
+        .valid(FILTER_CONDITION_LOGIC.AND, FILTER_CONDITION_LOGIC.OR)
+        .when("jobRole", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        })
+        .when("industry", {
+          is: Joi.exist(),
+          then: Joi.required(),
+        }),
+    }).allow({}),
+    format: Joi.string().valid(
+      SURVEY_RESULT_FORMAT.RAW,
+      SURVEY_RESULT_FORMAT.OBJECT
+    ),
+  }),
+};
 
 const postSalarySurveyRequstSchema = {
   body: Joi.object({
@@ -53,5 +165,12 @@ const validatePostSalarySurveyRequest = validate(postSalarySurveyRequstSchema);
 const validatePatchSalarySurveyRequest = validate(
   patchSalarySurveyRequstSchema
 );
+const validatePostFilterSalarySurveyListRequest = validate(
+  postFilterSalarySurveyListSchema
+);
 
-export { validatePostSalarySurveyRequest, validatePatchSalarySurveyRequest };
+export {
+  validatePostFilterSalarySurveyListRequest,
+  validatePostSalarySurveyRequest,
+  validatePatchSalarySurveyRequest,
+};

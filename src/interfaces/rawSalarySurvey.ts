@@ -1,4 +1,5 @@
 import { SurveyResultId } from "entity/SurveyResult";
+import { SurveyResult } from "entity/SurveyResult";
 
 enum SURVEY_RESULT_FORMAT {
   OBJECT = "object",
@@ -47,6 +48,57 @@ interface RawGetSalarySurveyRequest {
   format?: SURVEY_RESULT_FORMAT;
 }
 
+interface RawPostFilterSalarySurveyListResponse {
+  count: number;
+  results: SurveyResult[] | RawSalarySurveyResponse[];
+}
+
+enum FILTER_CONDITION_LOGIC {
+  AND = "and",
+  OR = "or",
+}
+
+interface FilterAgeGroup {
+  titles?: string[];
+  start?: number;
+  end?: number;
+  condition: FILTER_CONDITION_LOGIC;
+}
+
+interface FilterWorkExperienceYear {
+  titles?: string[];
+  start?: number;
+  end?: number;
+  condition: FILTER_CONDITION_LOGIC;
+}
+
+interface FilterCurrency {
+  titles?: string[];
+  condition: FILTER_CONDITION_LOGIC;
+}
+
+interface FilterAnnualSalary {
+  textSearch?: string;
+  rangeStart?: number;
+  rangeEnd?: number;
+  condition: FILTER_CONDITION_LOGIC;
+}
+
+interface FilterJob {
+  jobRole?: string;
+  industry?: string;
+  condition: FILTER_CONDITION_LOGIC;
+}
+
+interface RawPostFilterSalarySurveyListRequest {
+  ageGroupFilter?: FilterAgeGroup;
+  currencyFilter?: FilterCurrency;
+  workExperienceYearFilter?: FilterWorkExperienceYear;
+  annualSalaryFilter?: FilterAnnualSalary;
+  jobFilter?: FilterJob;
+  format?: SURVEY_RESULT_FORMAT;
+}
+
 enum SALARY_SURVEY_FIELD {
   RECORD_TIMESTAMP = "Timestamp",
   AGE_GROUP = "How old are you?",
@@ -67,6 +119,14 @@ export {
   RawPatchSalarySurveyRequest,
   RawGetSalarySurveyRequest,
   RawSalarySurveyResponse,
+  RawPostFilterSalarySurveyListRequest,
+  RawPostFilterSalarySurveyListResponse,
+  FilterAgeGroup,
+  FilterCurrency,
+  FilterWorkExperienceYear,
+  FilterAnnualSalary,
+  FilterJob,
   SALARY_SURVEY_FIELD,
   SURVEY_RESULT_FORMAT,
+  FILTER_CONDITION_LOGIC,
 };
