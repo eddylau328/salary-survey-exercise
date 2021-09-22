@@ -9,7 +9,7 @@ import { ExchangeRate } from "entity/ExchangeRate";
 
 import {
   RawSalarySurvey,
-  SALARY_SURVET_FIELD,
+  SALARY_SURVEY_FIELD,
 } from "interfaces/rawSalarySurvey";
 import { ConstantMap } from "interfaces/constantService";
 import { RawExchangeRate } from "interfaces/exchangeRateService";
@@ -115,9 +115,9 @@ function parseRawData(rawData: RawSalarySurvey[]): ParsedRawData {
   const currencySet: Set<string> = new Set();
   Array.isArray(rawData) &&
     rawData.forEach((item: RawSalarySurvey) => {
-      ageGroupSet.add(item[SALARY_SURVET_FIELD.AGE_GROUP]);
-      workExperienceYearSet.add(item[SALARY_SURVET_FIELD.WORK_EXPERIENCE_YEAR]);
-      currencySet.add(item[SALARY_SURVET_FIELD.CURRENCY]);
+      ageGroupSet.add(item[SALARY_SURVEY_FIELD.AGE_GROUP]);
+      workExperienceYearSet.add(item[SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR]);
+      currencySet.add(item[SALARY_SURVEY_FIELD.CURRENCY]);
     });
   return {
     ageGroups: [...ageGroupSet],

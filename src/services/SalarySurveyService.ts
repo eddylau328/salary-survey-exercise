@@ -2,7 +2,7 @@ import SalarySurveyServiceImp from "interfaces/salarySurveyService";
 import {
   RawPatchSalarySurvey,
   RawSalarySurvey,
-  SALARY_SURVET_FIELD,
+  SALARY_SURVEY_FIELD,
 } from "interfaces/rawSalarySurvey";
 import {
   GetAgeGroup,
@@ -205,7 +205,7 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     // create survey result object
     const surveryResult = new SurveyResult();
     surveryResult.recordTimestamp = new Date(
-      rawSalarySurvey[SALARY_SURVET_FIELD.RECORD_TIMESTAMP]
+      rawSalarySurvey[SALARY_SURVEY_FIELD.RECORD_TIMESTAMP]
     );
     surveryResult.jobInfo = jobInfo;
     surveryResult.personalInfo = personalInfo;
@@ -225,16 +225,16 @@ class SalarySurveyService implements SalarySurveyServiceImp {
   ): Promise<PersonalInfo> {
     const [ageGroup, workExperienceYear] = await Promise.all([
       this.ageGroupService.getConstant(
-        rawSalarySurvey[SALARY_SURVET_FIELD.AGE_GROUP]
+        rawSalarySurvey[SALARY_SURVEY_FIELD.AGE_GROUP]
       ),
       this.workExperienceYearService.getConstant(
-        rawSalarySurvey[SALARY_SURVET_FIELD.WORK_EXPERIENCE_YEAR]
+        rawSalarySurvey[SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR]
       ),
     ]);
     const personalInfo = new PersonalInfo();
     personalInfo.ageGroup = ageGroup;
     personalInfo.WorkExperienceYear = workExperienceYear;
-    personalInfo.location = rawSalarySurvey[SALARY_SURVET_FIELD.LOCATION];
+    personalInfo.location = rawSalarySurvey[SALARY_SURVEY_FIELD.LOCATION];
     return await queryRunner.manager.save(personalInfo);
   }
 
@@ -249,9 +249,9 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     queryRunner: QueryRunner
   ): Promise<JobInfo> {
     const jobInfo = new JobInfo();
-    jobInfo.industry = rawSalarySurvey[SALARY_SURVET_FIELD.INDUSTRY];
-    jobInfo.title = rawSalarySurvey[SALARY_SURVET_FIELD.JOB_TITLE];
-    jobInfo.titleRemark = rawSalarySurvey[SALARY_SURVET_FIELD.JOB_REMARK];
+    jobInfo.industry = rawSalarySurvey[SALARY_SURVEY_FIELD.INDUSTRY];
+    jobInfo.title = rawSalarySurvey[SALARY_SURVEY_FIELD.JOB_TITLE];
+    jobInfo.titleRemark = rawSalarySurvey[SALARY_SURVEY_FIELD.JOB_REMARK];
     return await queryRunner.manager.save(jobInfo);
   }
 
@@ -266,9 +266,9 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     queryRunner: QueryRunner
   ): Promise<SalaryInfo> {
     const salaryInfo = new SalaryInfo();
-    const rawCurrency = rawSalarySurvey[SALARY_SURVET_FIELD.CURRENCY];
-    const rawAnnualSalary = rawSalarySurvey[SALARY_SURVET_FIELD.ANNUAL_SALARY];
-    const currencyRemark = rawSalarySurvey[SALARY_SURVET_FIELD.CURRENCY_REMARK];
+    const rawCurrency = rawSalarySurvey[SALARY_SURVEY_FIELD.CURRENCY];
+    const rawAnnualSalary = rawSalarySurvey[SALARY_SURVEY_FIELD.ANNUAL_SALARY];
+    const currencyRemark = rawSalarySurvey[SALARY_SURVEY_FIELD.CURRENCY_REMARK];
     const [currency, annualSalary] = await Promise.all([
       this.currencyService.getConstant(rawCurrency),
       this.salaryService.parseAnnualSalary(rawAnnualSalary),
@@ -319,9 +319,9 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     surveyResult.jobInfo = updatedJobInfo;
     surveyResult.salaryInfo = updatedSalaryInfo;
     surveyResult.personalInfo = updatedPersonalInfo;
-    if (SALARY_SURVET_FIELD.RECORD_TIMESTAMP in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.RECORD_TIMESTAMP in rawPatchSalarySurvey) {
       surveyResult.recordTimestamp = new Date(
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.RECORD_TIMESTAMP]
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.RECORD_TIMESTAMP]
       );
     }
     return await queryRunner.manager.save(surveyResult);
@@ -339,21 +339,21 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     rawPatchSalarySurvey: RawPatchSalarySurvey,
     queryRunner: QueryRunner
   ): Promise<SalaryInfo> {
-    if (SALARY_SURVET_FIELD.ANNUAL_SALARY in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.ANNUAL_SALARY in rawPatchSalarySurvey) {
       salaryInfo.annualSalary = await this.salaryService.parseAnnualSalary(
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.ANNUAL_SALARY]
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.ANNUAL_SALARY]
       );
       salaryInfo.rawAnnualSalary =
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.ANNUAL_SALARY];
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.ANNUAL_SALARY];
     }
-    if (SALARY_SURVET_FIELD.CURRENCY in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.CURRENCY in rawPatchSalarySurvey) {
       salaryInfo.currency = await this.currencyService.getConstant(
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.CURRENCY]
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.CURRENCY]
       );
     }
-    if (SALARY_SURVET_FIELD.CURRENCY_REMARK in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.CURRENCY_REMARK in rawPatchSalarySurvey) {
       salaryInfo.currencyRemark =
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.CURRENCY_REMARK];
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.CURRENCY_REMARK];
     }
     return await queryRunner.manager.save(salaryInfo);
   }
@@ -370,19 +370,19 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     rawPatchSalarySurvey: RawPatchSalarySurvey,
     queryRunner: QueryRunner
   ): Promise<PersonalInfo> {
-    if (SALARY_SURVET_FIELD.LOCATION in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.LOCATION in rawPatchSalarySurvey) {
       personalInfo.location =
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.LOCATION];
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.LOCATION];
     }
-    if (SALARY_SURVET_FIELD.AGE_GROUP in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.AGE_GROUP in rawPatchSalarySurvey) {
       personalInfo.ageGroup = await this.ageGroupService.getConstant(
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.AGE_GROUP]
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.AGE_GROUP]
       );
     }
-    if (SALARY_SURVET_FIELD.WORK_EXPERIENCE_YEAR in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR in rawPatchSalarySurvey) {
       personalInfo.WorkExperienceYear =
         await this.workExperienceYearService.getConstant(
-          rawPatchSalarySurvey[SALARY_SURVET_FIELD.WORK_EXPERIENCE_YEAR]
+          rawPatchSalarySurvey[SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR]
         );
     }
     return await queryRunner.manager.save(personalInfo);
@@ -400,15 +400,15 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     rawPatchSalarySurvey: RawPatchSalarySurvey,
     queryRunner: QueryRunner
   ): Promise<JobInfo> {
-    if (SALARY_SURVET_FIELD.INDUSTRY in rawPatchSalarySurvey) {
-      jobInfo.industry = rawPatchSalarySurvey[SALARY_SURVET_FIELD.INDUSTRY];
+    if (SALARY_SURVEY_FIELD.INDUSTRY in rawPatchSalarySurvey) {
+      jobInfo.industry = rawPatchSalarySurvey[SALARY_SURVEY_FIELD.INDUSTRY];
     }
-    if (SALARY_SURVET_FIELD.JOB_TITLE in rawPatchSalarySurvey) {
-      jobInfo.title = rawPatchSalarySurvey[SALARY_SURVET_FIELD.JOB_TITLE];
+    if (SALARY_SURVEY_FIELD.JOB_TITLE in rawPatchSalarySurvey) {
+      jobInfo.title = rawPatchSalarySurvey[SALARY_SURVEY_FIELD.JOB_TITLE];
     }
-    if (SALARY_SURVET_FIELD.JOB_REMARK in rawPatchSalarySurvey) {
+    if (SALARY_SURVEY_FIELD.JOB_REMARK in rawPatchSalarySurvey) {
       jobInfo.titleRemark =
-        rawPatchSalarySurvey[SALARY_SURVET_FIELD.JOB_REMARK];
+        rawPatchSalarySurvey[SALARY_SURVEY_FIELD.JOB_REMARK];
     }
     return await queryRunner.manager.save(jobInfo);
   }

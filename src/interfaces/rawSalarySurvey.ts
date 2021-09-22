@@ -36,7 +36,7 @@ interface RawGetSalarySurveyRequest {
   id: SurveyResultId;
 }
 
-enum SALARY_SURVET_FIELD {
+enum SALARY_SURVEY_FIELD {
   RECORD_TIMESTAMP = "Timestamp",
   AGE_GROUP = "How old are you?",
   INDUSTRY = "What industry do you work in?",
@@ -55,5 +55,5 @@ export {
   RawPatchSalarySurvey,
   RawPatchSalarySurveyRequest,
   RawGetSalarySurveyRequest,
-  SALARY_SURVET_FIELD,
+  SALARY_SURVEY_FIELD,
 };
