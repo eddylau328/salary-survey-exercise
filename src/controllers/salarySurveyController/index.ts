@@ -6,15 +6,23 @@ import WorkExperienceYearService from "services/WorkExperienceYearService";
 import CurrencyService from "services/CurrencyService";
 import SalaryService from "services/SalaryService";
 import {
-  RawPatchSalarySurvey,
+  RawGetSalarySurveyRequest,
   RawPatchSalarySurveyRequest,
   RawSalarySurvey,
+  SURVEY_RESULT_FORMAT,
 } from "interfaces/rawSalarySurvey";
+import {
+  validatePatchSalarySurveyRequest,
+  validatePostSalarySurveyRequest,
+} from "./validators";
+import { AverageAnnualSalaryRequest } from "interfaces/salaryService";
 
 export default class SalarySurveyController implements Controller {
   public path = "/salary-survey";
   public router = Router();
-  public errorHandler = (): void => null;
+  public errorHandler = (err: Error): void => {
+    throw err;
+  };
 
   private _salarySurveyService: SalarySurveyService;
 
@@ -29,17 +37,36 @@ export default class SalarySurveyController implements Controller {
   }
 
   private _initializeRouter() {
-    this.router.get("/average-salary", this._getAverageSalary.bind(this));
-    this.router.get("/", this._getSalarySurvey.bind(this));
-    this.router.post("/", this._postSalarySurvey.bind(this));
-    this.router.patch("/", this._patchSalarySurvey.bind(this));
+    this.router.get(
+      "/average-salary",
+
+      this._getAverageSalary.bind(this)
+    );
+    this.router.get("/:id", this._getSalarySurvey.bind(this));
+    this.router.post(
+      "/",
+      validatePostSalarySurveyRequest,
+      this._postSalarySurvey.bind(this)
+    );
+    this.router.patch(
+      "/",
+      validatePatchSalarySurveyRequest,
+      this._patchSalarySurvey.bind(this)
+    );
   }
 
   private async _getSalarySurvey(req: Request, res: Response) {
     try {
-      const rawGetSalarySurveyRequest: RawPatchSalarySurveyRequest = req.body;
-      const surveyResult = await this._salarySurveyService.getSurveyResultById(
-        rawGetSalarySurveyRequest.id
+      const format =
+        req.query.format === SURVEY_RESULT_FORMAT.OBJECT
+          ? SURVEY_RESULT_FORMAT.OBJECT
+          : SURVEY_RESULT_FORMAT.RAW;
+      const rawGetSalarySurveyRequest: RawGetSalarySurveyRequest = {
+        id: req.params.id,
+        format,
+      };
+      const surveyResult = await this._salarySurveyService.getSurveyResult(
+        rawGetSalarySurveyRequest
       );
       res.status(200).json(surveyResult);
     } catch (error) {
@@ -77,8 +104,13 @@ export default class SalarySurveyController implements Controller {
 
   private async _getAverageSalary(req: Request, res: Response) {
     try {
+      const averageAnnualSalaryRequest: AverageAnnualSalaryRequest = {
+        jobRole: String(req.query.jobRole || ""),
+      };
       const averageAnnualSalary =
-        await this._salarySurveyService.getAverageAnnualSalary(req.body);
+        await this._salarySurveyService.getAverageAnnualSalary(
+          averageAnnualSalaryRequest
+        );
       res.status(200).json(averageAnnualSalary);
     } catch (error) {
       console.log(error);

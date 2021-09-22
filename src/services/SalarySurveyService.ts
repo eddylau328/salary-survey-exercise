@@ -1,8 +1,12 @@
+import moment from "moment";
 import SalarySurveyServiceImp from "interfaces/salarySurveyService";
 import {
+  RawGetSalarySurveyRequest,
   RawPatchSalarySurvey,
   RawSalarySurvey,
+  RawSalarySurveyResponse,
   SALARY_SURVEY_FIELD,
+  SURVEY_RESULT_FORMAT,
 } from "interfaces/rawSalarySurvey";
 import {
   GetAgeGroup,
@@ -117,10 +121,13 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     return results;
   }
 
-  public async getSurveyResultById(
-    surveyResultId: SurveyResultId
-  ): Promise<SurveyResult> {
-    return await getRepository(SurveyResult)
+  public async getSurveyResult({
+    id,
+    format = SURVEY_RESULT_FORMAT.OBJECT,
+  }: RawGetSalarySurveyRequest): Promise<
+    SurveyResult | RawSalarySurveyResponse
+  > {
+    const result = await getRepository(SurveyResult)
       .createQueryBuilder("surveyResult")
       .leftJoinAndSelect("surveyResult.jobInfo", "jobInfo")
       .leftJoinAndSelect("surveyResult.salaryInfo", "salaryInfo")
@@ -131,8 +138,12 @@ class SalarySurveyService implements SalarySurveyServiceImp {
         "personalInfo.workExperienceYear",
         "workExperienceYear"
       )
-      .where({ id: surveyResultId })
+      .where({ id: id })
       .getOneOrFail();
+    if (format === SURVEY_RESULT_FORMAT.OBJECT) {
+      return result;
+    }
+    return await this.convertRawFormat(result);
   }
 
   public async getAverageAnnualSalary(
@@ -150,7 +161,9 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     surveyResultId: SurveyResultId,
     rawPatchSalarySurvey: RawPatchSalarySurvey
   ): Promise<SurveyResult> {
-    const surveyResult = await this.getSurveyResultById(surveyResultId);
+    const surveyResult = (await this.getSurveyResult({
+      id: surveyResultId,
+    })) as SurveyResult;
     const queryRunner = getConnection().createQueryRunner();
     try {
       await queryRunner.startTransaction();
@@ -233,7 +246,7 @@ class SalarySurveyService implements SalarySurveyServiceImp {
     ]);
     const personalInfo = new PersonalInfo();
     personalInfo.ageGroup = ageGroup;
-    personalInfo.WorkExperienceYear = workExperienceYear;
+    personalInfo.workExperienceYear = workExperienceYear;
     personalInfo.location = rawSalarySurvey[SALARY_SURVEY_FIELD.LOCATION];
     return await queryRunner.manager.save(personalInfo);
   }
@@ -380,7 +393,7 @@ class SalarySurveyService implements SalarySurveyServiceImp {
       );
     }
     if (SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR in rawPatchSalarySurvey) {
-      personalInfo.WorkExperienceYear =
+      personalInfo.workExperienceYear =
         await this.workExperienceYearService.getConstant(
           rawPatchSalarySurvey[SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR]
         );
@@ -411,6 +424,30 @@ class SalarySurveyService implements SalarySurveyServiceImp {
         rawPatchSalarySurvey[SALARY_SURVEY_FIELD.JOB_REMARK];
     }
     return await queryRunner.manager.save(jobInfo);
+  }
+
+  private async convertRawFormat(
+    result: SurveyResult
+  ): Promise<RawSalarySurveyResponse> {
+    const rawTimeFormat = "M/D/YYYY HH:mm:ss";
+    const rawResult: RawSalarySurveyResponse = {
+      id: result.id,
+      createAt: moment(result.createAt).format(rawTimeFormat),
+      [SALARY_SURVEY_FIELD.AGE_GROUP]: result.personalInfo.ageGroup.title,
+      [SALARY_SURVEY_FIELD.ANNUAL_SALARY]: result.salaryInfo.rawAnnualSalary,
+      [SALARY_SURVEY_FIELD.CURRENCY]: result.salaryInfo.currency.title,
+      [SALARY_SURVEY_FIELD.CURRENCY_REMARK]: result.salaryInfo.currencyRemark,
+      [SALARY_SURVEY_FIELD.INDUSTRY]: result.jobInfo.industry,
+      [SALARY_SURVEY_FIELD.JOB_REMARK]: result.jobInfo.titleRemark,
+      [SALARY_SURVEY_FIELD.JOB_TITLE]: result.jobInfo.title,
+      [SALARY_SURVEY_FIELD.LOCATION]: result.personalInfo.location,
+      [SALARY_SURVEY_FIELD.RECORD_TIMESTAMP]: moment(
+        result.recordTimestamp
+      ).format(rawTimeFormat),
+      [SALARY_SURVEY_FIELD.WORK_EXPERIENCE_YEAR]:
+        result.personalInfo.workExperienceYear.title,
+    };
+    return rawResult;
   }
 }
 
