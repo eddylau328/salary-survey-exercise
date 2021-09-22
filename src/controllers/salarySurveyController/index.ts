@@ -32,6 +32,7 @@ export default class SalarySurveyController implements Controller {
     this.router.get("/average-salary", this._getAverageSalary.bind(this));
     this.router.get("/", this._getSalarySurvey.bind(this));
     this.router.post("/", this._postSalarySurvey.bind(this));
+    this.router.patch("/", this._patchSalarySurvey.bind(this));
   }
 
   private async _getSalarySurvey(req: Request, res: Response) {
@@ -61,7 +62,7 @@ export default class SalarySurveyController implements Controller {
     }
   }
 
-  private async _updateSalarySurvey(req: Request, res: Response) {
+  private async _patchSalarySurvey(req: Request, res: Response) {
     try {
       const rawPatchSalarySurveyRequest: RawPatchSalarySurveyRequest = req.body;
       const { id, ...rawPatchSalarySurvey } = rawPatchSalarySurveyRequest;

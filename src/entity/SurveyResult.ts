@@ -35,7 +35,4 @@ export class SurveyResult {
 
   @CreateDateColumn()
   createAt: Date;
-
-  @UpdateDateColumn()
-  updateAt: Date;
 }

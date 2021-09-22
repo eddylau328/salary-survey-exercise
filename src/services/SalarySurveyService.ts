@@ -125,6 +125,12 @@ class SalarySurveyService implements SalarySurveyServiceImp {
       .leftJoinAndSelect("surveyResult.jobInfo", "jobInfo")
       .leftJoinAndSelect("surveyResult.salaryInfo", "salaryInfo")
       .leftJoinAndSelect("surveyResult.personalInfo", "personalInfo")
+      .leftJoinAndSelect("salaryInfo.currency", "currency")
+      .leftJoinAndSelect("personalInfo.ageGroup", "ageGroup")
+      .leftJoinAndSelect(
+        "personalInfo.workExperienceYear",
+        "workExperienceYear"
+      )
       .where({ id: surveyResultId })
       .getOneOrFail();
   }

@@ -28,7 +28,7 @@ export class PersonalInfo {
     () => WorkExperienceYear,
     (WorkExperienceYear) => WorkExperienceYear.personalInfo
   )
-  WorkExperienceYear: WorkExperienceYear;
+  workExperienceYear: WorkExperienceYear;
 
   @Column()
   location: string;

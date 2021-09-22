@@ -6,7 +6,7 @@ import { PersonalInfo } from "./PersonalInfo";
 export class WorkExperienceYear extends Range {
   @OneToMany(
     () => PersonalInfo,
-    (personalInfo) => personalInfo.WorkExperienceYear
+    (personalInfo) => personalInfo.workExperienceYear
   )
   personalInfo: PersonalInfo;
 }
