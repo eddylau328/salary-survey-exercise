@@ -1,0 +1,596 @@
+---
+openapi: 3.0.0
+info:
+  title: Salary Survey Backend API
+  description: This document contains the APIs for calling the salary survey backend
+  contact:
+    email: eddylau0328@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0-oas3
+servers:
+  - url: http://127.0.0.1:8000/salary-survey
+tags:
+  - name: developers
+    description: Operations available to regular developers
+paths:
+  /average-salary:
+    get:
+      tags:
+        - developers
+      summary: get average annual salary
+      description: |
+        By passing in the appropriate options, you can get the average annual salary according to the job role you input
+      parameters:
+        - name: jobRole
+          in: query
+          description: pass a search string for looking up related job role, if not provided, then search all
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AverageAnnualSalaryResponse"
+        "400":
+          description: bad request
+  /list:
+    post:
+      tags:
+        - developers
+      summary: get salary survey response with filter
+      description: |
+        By passing in the appropriate options, you can get the salary surveys responses with your filter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalarySurveyFilter"
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200"
+        "400":
+          description: bad request
+  /:
+    post:
+      tags:
+        - developers
+      summary: get salary survey response with filter
+      description: |
+        By passing in the appropriate options, you insert a survey result
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalarySurveyPost"
+      responses:
+        "201":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObjectSalarySurveyResponse"
+        "400":
+          description: bad request
+    patch:
+      tags:
+        - developers
+      summary: get salary survey response with filter
+      description: |
+        By passing in the appropriate options, you update a survey result responses with your filter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SalarySurveyPatch"
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObjectSalarySurveyResponse"
+        "400":
+          description: bad request
+components:
+  schemas:
+    Condition:
+      type: string
+      example: and
+      enum:
+        - and
+        - or
+    Format:
+      type: string
+      example: raw
+      enum:
+        - raw
+        - object
+    AgeGroupFields:
+      type: string
+      example: 18-24
+      enum:
+        - 35-44
+        - 25-34
+        - 18-24
+        - 45-54
+        - 55-64
+        - 65 or over
+        - under 18
+    WorkExperienceYearFields:
+      type: string
+      example: 11 - 20 years
+      enum:
+        - 1 year or less
+        - 2 - 4 years
+        - 5-7 years
+        - 8 - 10 years
+        - 11 - 20 years
+        - 21 - 30 years
+        - 31 - 40 years
+        - 41 years or more
+    CurrencyFields:
+      type: string
+      example: USD
+      enum:
+        - USD
+        - GBP
+        - CAD
+        - EUR
+        - SEK
+        - Other
+        - AUD/NZD
+        - JPY
+        - CHF
+        - HKD
+        - ZAR
+    Currency:
+      required:
+        - id
+        - title
+      type: object
+      properties:
+        id:
+          type: number
+          example: 177
+        title:
+          $ref: "#/components/schemas/CurrencyFields"
+    WorkExperienceYear:
+      required:
+        - end
+        - id
+        - start
+        - title
+      type: object
+      properties:
+        id:
+          type: number
+          example: 114
+        title:
+          $ref: "#/components/schemas/AgeGroupFields"
+        start:
+          type: number
+          example: 11
+        end:
+          type: number
+          example: 20
+    AgeGroup:
+      required:
+        - end
+        - id
+        - start
+        - title
+      type: object
+      properties:
+        id:
+          type: number
+          example: 124
+        title:
+          $ref: "#/components/schemas/WorkExperienceYearFields"
+        start:
+          type: number
+          example: 18
+        end:
+          type: number
+          example: 24
+    SalarySurveyPost:
+      required:
+        - How many years of post-college professional work experience do you have?
+        - How old are you?
+        - 'If "Other," please indicate the currency here:'
+        - "If your job title needs additional context, please clarify here:"
+        - Job title
+        - Please indicate the currency
+        - Timestamp
+        - What industry do you work in?
+        - What is your annual salary?
+        - Where are you located? (City/state/country)
+      type: object
+      properties:
+        How old are you?:
+          $ref: "#/components/schemas/AgeGroupFields"
+        What is your annual salary?:
+          type: string
+          example: "91000"
+        Please indicate the currency:
+          $ref: "#/components/schemas/CurrencyFields"
+        'If "Other," please indicate the currency here:':
+          type: string
+          example: ""
+        What industry do you work in?:
+          type: string
+          example: oil field
+        "If your job title needs additional context, please clarify here:":
+          type: string
+          example: ""
+        Job title:
+          type: string
+          example: sr mechanical designer
+        Where are you located? (City/state/country):
+          type: string
+          example: houston texas
+        Timestamp:
+          type: string
+          example: 4/29/2019 09:28:47
+        How many years of post-college professional work experience do you have?:
+          $ref: "#/components/schemas/WorkExperienceYearFields"
+    SalarySurveyPatch:
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 58ddede4-5430-4019-a054-2394307e9810
+        How old are you?:
+          $ref: "#/components/schemas/AgeGroupFields"
+        What is your annual salary?:
+          type: string
+          example: "91000"
+        Please indicate the currency:
+          $ref: "#/components/schemas/CurrencyFields"
+        'If "Other," please indicate the currency here:':
+          type: string
+          example: ""
+        What industry do you work in?:
+          type: string
+          example: oil field
+        "If your job title needs additional context, please clarify here:":
+          type: string
+          example: ""
+        Job title:
+          type: string
+          example: sr mechanical designer
+        Where are you located? (City/state/country):
+          type: string
+          example: houston texas
+        Timestamp:
+          type: string
+          example: 4/29/2019 09:28:47
+        How many years of post-college professional work experience do you have?:
+          $ref: "#/components/schemas/WorkExperienceYearFields"
+    RawSalarySurvey:
+      required:
+        - How many years of post-college professional work experience do you have?
+        - How old are you?
+        - 'If "Other," please indicate the currency here:'
+        - "If your job title needs additional context, please clarify here:"
+        - Job title
+        - Please indicate the currency
+        - Timestamp
+        - What industry do you work in?
+        - What is your annual salary?
+        - Where are you located? (City/state/country)
+        - createAt
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 58ddede4-5430-4019-a054-2394307e9810
+        createAt:
+          type: string
+          example: 9/23/2021 05:06:37
+        How old are you?:
+          $ref: "#/components/schemas/AgeGroupFields"
+        What is your annual salary?:
+          type: string
+          example: "91000"
+        Please indicate the currency:
+          $ref: "#/components/schemas/CurrencyFields"
+        'If "Other," please indicate the currency here:':
+          type: string
+          example: ""
+        What industry do you work in?:
+          type: string
+          example: oil field
+        "If your job title needs additional context, please clarify here:":
+          type: string
+          example: ""
+        Job title:
+          type: string
+          example: sr mechanical designer
+        Where are you located? (City/state/country):
+          type: string
+          example: houston texas
+        Timestamp:
+          type: string
+          example: 4/29/2019 09:28:47
+        How many years of post-college professional work experience do you have?:
+          $ref: "#/components/schemas/WorkExperienceYearFields"
+    SalarySurveyObject:
+      required:
+        - createAt
+        - id
+        - jobInfo
+        - personalInfo
+        - recordTimestamp
+        - salaryInfo
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 58ddede4-5430-4019-a054-2394307e9810
+        createAt:
+          type: string
+          example: 2021-09-23T05:06:37.968Z
+        recordTimestamp:
+          type: string
+          example: 2019-04-29T09:28:47.000Z
+        jobInfo:
+          $ref: "#/components/schemas/SalarySurveyObject_jobInfo"
+        salaryInfo:
+          $ref: "#/components/schemas/SalarySurveyObject_salaryInfo"
+        personalInfo:
+          $ref: "#/components/schemas/SalarySurveyObject_personalInfo"
+    AverageAnnualSalaryResponse:
+      required:
+        - averageAnnualSalary
+        - count
+        - jobRole
+        - targetCurrency
+      type: object
+      properties:
+        averageAnnualSalary:
+          type: string
+          example: "84730.1"
+        count:
+          type: string
+          example: "163"
+        targetCurrency:
+          type: string
+          example: USD
+        jobRole:
+          type: string
+          example: developer
+    RawSalarySurveyResponse:
+      required:
+        - count
+        - results
+      type: object
+      properties:
+        count:
+          type: number
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/RawSalarySurvey"
+    ObjectSalarySurveyResponse:
+      required:
+        - count
+        - results
+      type: object
+      properties:
+        count:
+          type: number
+          example: 1
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SalarySurveyObject"
+    SalarySurveyFilter:
+      type: object
+      properties:
+        ageGroupFilter:
+          oneOf:
+            - $ref: "#/components/schemas/ageGroupTitlesFilter"
+            - $ref: "#/components/schemas/ageGroupRangeFilter"
+        workExperienceYearFilter:
+          oneOf:
+            - $ref: "#/components/schemas/workExperienceYearRangeFilter"
+            - $ref: "#/components/schemas/workExperienceYearTitleFilter"
+        currencyFilter:
+          $ref: "#/components/schemas/currencyFilter"
+        annualSalaryFilter:
+          oneOf:
+            - $ref: "#/components/schemas/annualSalaryRangeFilter"
+            - $ref: "#/components/schemas/annualSalaryTextFilter"
+        jobFilter:
+          $ref: "#/components/schemas/jobFilter"
+        format:
+          $ref: "#/components/schemas/Format"
+    ageGroupTitlesFilter:
+      required:
+        - condition
+        - titles
+      type: object
+      properties:
+        titles:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgeGroupFields"
+        condition:
+          $ref: "#/components/schemas/Condition"
+    ageGroupRangeFilter:
+      required:
+        - condition
+        - end
+        - start
+      type: object
+      properties:
+        start:
+          type: number
+          example: 4
+        end:
+          type: number
+          example: 10
+        condition:
+          $ref: "#/components/schemas/Condition"
+    workExperienceYearTitleFilter:
+      required:
+        - condition
+        - titles
+      type: object
+      properties:
+        titles:
+          type: array
+          description: either provide the titles / (start, end)
+          items:
+            $ref: "#/components/schemas/WorkExperienceYearFields"
+        condition:
+          $ref: "#/components/schemas/Condition"
+    workExperienceYearRangeFilter:
+      required:
+        - condition
+        - end
+        - start
+      type: object
+      properties:
+        start:
+          type: number
+          example: 4
+        end:
+          type: number
+          example: 10
+        condition:
+          $ref: "#/components/schemas/Condition"
+    currencyFilter:
+      required:
+        - condition
+        - titles
+      type: object
+      properties:
+        titles:
+          type: array
+          items:
+            $ref: "#/components/schemas/CurrencyFields"
+        condition:
+          $ref: "#/components/schemas/Condition"
+    annualSalaryTextFilter:
+      required:
+        - condition
+        - textSearch
+      type: object
+      properties:
+        textSearch:
+          type: string
+          example: 8000k
+        condition:
+          $ref: "#/components/schemas/Condition"
+    annualSalaryRangeFilter:
+      required:
+        - condition
+        - rangeEnd
+        - rangeStart
+      type: object
+      properties:
+        rangeStart:
+          type: string
+          example: "20000"
+        rangeEnd:
+          type: string
+          example: "80000"
+        condition:
+          $ref: "#/components/schemas/Condition"
+    jobFilter:
+      required:
+        - condition
+      type: object
+      properties:
+        jobRole:
+          type: string
+          example: developer
+        industry:
+          type: string
+          example: Web
+        condition:
+          $ref: "#/components/schemas/Condition"
+    inline_response_200:
+      oneOf:
+        - $ref: "#/components/schemas/RawSalarySurveyResponse"
+        - $ref: "#/components/schemas/ObjectSalarySurveyResponse"
+    SalarySurveyObject_jobInfo:
+      required:
+        - id
+        - industry
+        - title
+        - titleRemark
+      type: object
+      properties:
+        id:
+          type: number
+          example: 238711
+        industry:
+          type: string
+          example: oil field
+        title:
+          type: string
+          example: sr mechanical designer
+        titleRemark:
+          type: string
+          example: ""
+    SalarySurveyObject_salaryInfo:
+      required:
+        - annualSalary
+        - currency
+        - currencyRemark
+        - id
+        - rawAnnualSalary
+      type: object
+      properties:
+        id:
+          type: number
+          example: 237810
+        annualSalary:
+          type: string
+          example: "91000.000"
+        rawAnnualSalary:
+          type: string
+          example: "91000"
+        currencyRemark:
+          type: string
+          example: ""
+        currency:
+          $ref: "#/components/schemas/Currency"
+    SalarySurveyObject_personalInfo:
+      required:
+        - ageGroup
+        - id
+        - location
+        - workExperienceYear
+      type: object
+      properties:
+        id:
+          type: number
+          example: 237857
+        location:
+          type: string
+          example: houston texas
+        ageGroup:
+          $ref: "#/components/schemas/AgeGroup"
+        workExperienceYear:
+          $ref: "#/components/schemas/WorkExperienceYear"

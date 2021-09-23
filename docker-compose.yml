@@ -15,13 +15,12 @@ services:
       context: .
       dockerfile: Dockerfile
       target: base
-    image: salary-survery/backend:develop
+    image: salary-survey/backend:develop
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    container_name: salary-survery-backend
+    container_name: salary-survey-backend
     command: yarn dev
-    # command: sh -c "yarn run-init-db && yarn dev"
     ports:
       - 8000:8000
     depends_on:

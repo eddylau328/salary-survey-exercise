@@ -4,6 +4,8 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 
 const corsConfig: cors.CorsOptions = {
   origin: ["*"],
@@ -29,6 +31,7 @@ export default class App {
     this.initializeMiddlewares();
     this.initializeControllers(this.controllers);
     this.initializeErrorHandling();
+    this.initializeDocument();
     return this.listen();
   }
 
@@ -50,6 +53,11 @@ export default class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(morgan("combined"));
+  }
+
+  private initializeDocument() {
+    const swaggerDocument = YAML.load("src/swagger.yaml");
+    this.app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   }
 
   private initializeErrorHandling() {

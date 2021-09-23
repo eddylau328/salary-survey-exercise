@@ -23,9 +23,7 @@ export default class SalarySurveyController implements Controller {
   public path = "/salary-survey";
   public router = Router();
   public errorHandler = (err: Error, req: Request, res: Response): void => {
-    console.log(err);
-    res.status(400).json(err);
-    // throw err;
+    throw err;
   };
 
   private _salarySurveyService: SalarySurveyService;

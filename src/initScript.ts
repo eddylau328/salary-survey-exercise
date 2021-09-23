@@ -190,7 +190,7 @@ async function removeAllData(): Promise<void> {
 
 (async (): Promise<void> => {
   const db = new DB();
-  await db.initialize();
+  const connection = await db.initialize();
   await removeAllData();
   const { ageGroups, workExperienceYears, currencyDatum } = parseRawData(
     data as RawSalarySurvey[]
@@ -243,4 +243,5 @@ async function removeAllData(): Promise<void> {
       throw e;
     }
   }
+  return await connection.close();
 })();

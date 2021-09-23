@@ -106,3 +106,4 @@ dist
 ormconfig.json
 db
 .env.*
+.DS_Store
