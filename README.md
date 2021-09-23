@@ -58,3 +58,40 @@ install docker and docker-compose before running the project
 `docker exec salary-survey-backend yarn test`
 
 - run tests for parsing the salary data into correct numeric data
+
+### Feedbacks
+
+##### Difficulties
+
+###### Annual Salary Field
+
+This field input is originally string consists of not only the numbers, but also other strings like normal words, short numeric symbols (k, K, m, M) and long numeric symbols (million, thousand). It requires some time for founding the alogirthm for filtering the results and minimizing the biased cases stored in the database.
+
+###### Average Annual Salary
+
+As the annual salary field allow different currencies, it requires converting the original salary to the same currency for getting the correct average annual salary in theory. However, in order to do that, it requires collecting the exchange rate and mapping the currency table, so that when querying the annual salary, it allows joining the table for the select currency for converting.
+
+### Add / Change (If more time)
+
+###### Test Cases
+
+Adding more tests, such as unit tests and service tests could prevent facing errors in run time
+
+###### Add exchange rate API
+
+By adding exchange rate API, more accurate values could be achieved when requesting average annual salary
+
+###### Add keyword filter or restrict numberic input for the annual salary fields
+
+- Maybe adding more keyword filter for the salary fields
+- Or restricting the salary fields input to numberic instead of string
+
+###### Add winston for logs
+
+- More clear for logging with levels
+- Can output to logs other then console
+
+###### Add ErrorHandler
+
+- handle error in a structural way
+- maybe with error code
