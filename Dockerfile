@@ -8,12 +8,14 @@ COPY yarn.lock .
 
 RUN yarn
 
+COPY . .
+
 EXPOSE 8000
 
 FROM base as production
 
 WORKDIR /usr/src/app
 
-COPY . . 
+COPY --from=base /usr/src/app . 
 
 EXPOSE 8000

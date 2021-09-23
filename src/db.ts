@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
-import { ServerStatus } from "interfaces/ServerStatus";
+import { ServerStatus } from "interfaces/serverStatus";
 import { dbConfig } from "config";
 
 export default class DB {
